@@ -19,9 +19,9 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
-export const ProductId = IDL.Nat;
 export const Rupees = IDL.Nat;
 export const Category = IDL.Text;
+export const ProductId = IDL.Nat;
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -66,7 +66,7 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addProduct' : IDL.Func([ProductId, IDL.Text, Rupees, Category], [], []),
+  'addProduct' : IDL.Func([IDL.Text, Rupees, Category], [ProductId], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'deleteProduct' : IDL.Func([ProductId], [], []),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -100,9 +100,9 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
-  const ProductId = IDL.Nat;
   const Rupees = IDL.Nat;
   const Category = IDL.Text;
+  const ProductId = IDL.Nat;
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -147,7 +147,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addProduct' : IDL.Func([ProductId, IDL.Text, Rupees, Category], [], []),
+    'addProduct' : IDL.Func([IDL.Text, Rupees, Category], [ProductId], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'deleteProduct' : IDL.Func([ProductId], [], []),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),

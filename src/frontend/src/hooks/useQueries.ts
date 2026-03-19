@@ -56,12 +56,11 @@ export function useAddProduct() {
       imageFile?: File;
     }) => {
       if (!actor) throw new Error("Not connected");
-      const id = BigInt(Date.now());
-      await actor.addProduct(id, name, price, category);
+      const newId = await actor.addProduct(name, price, category);
       if (imageFile) {
         const bytes = new Uint8Array(await imageFile.arrayBuffer());
         const blob = ExternalBlob.fromBytes(bytes);
-        await actor.uploadProductImage(id, blob);
+        await actor.uploadProductImage(newId, blob);
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),

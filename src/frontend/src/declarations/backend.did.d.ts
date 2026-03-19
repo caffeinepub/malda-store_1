@@ -54,7 +54,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addProduct' : ActorMethod<[ProductId, string, Rupees, Category], undefined>,
+  'addProduct' : ActorMethod<[string, Rupees, Category], ProductId>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'deleteProduct' : ActorMethod<[ProductId], undefined>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,

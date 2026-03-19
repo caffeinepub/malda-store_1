@@ -34,7 +34,7 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addProduct(id: ProductId, name: string, price: Rupees, category: Category): Promise<void>;
+    addProduct(name: string, price: Rupees, category: Category): Promise<ProductId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     deleteProduct(id: ProductId): Promise<void>;
     getCallerUserProfile(): Promise<UserProfile | null>;

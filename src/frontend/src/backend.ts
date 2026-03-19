@@ -127,7 +127,7 @@ export interface backendInterface {
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    addProduct(id: ProductId, name: string, price: Rupees, category: Category): Promise<void>;
+    addProduct(name: string, price: Rupees, category: Category): Promise<ProductId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     deleteProduct(id: ProductId): Promise<void>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -243,17 +243,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async addProduct(arg0: ProductId, arg1: string, arg2: Rupees, arg3: Category): Promise<void> {
+    async addProduct(arg0: string, arg1: Rupees, arg2: Category): Promise<ProductId> {
         if (this.processError) {
             try {
-                const result = await this.actor.addProduct(arg0, arg1, arg2, arg3);
+                const result = await this.actor.addProduct(arg0, arg1, arg2);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.addProduct(arg0, arg1, arg2, arg3);
+            const result = await this.actor.addProduct(arg0, arg1, arg2);
             return result;
         }
     }

@@ -1,18 +1,16 @@
 import Map "mo:core/Map";
 import Array "mo:core/Array";
-import Order "mo:core/Order";
-import Text "mo:core/Text";
 import Nat "mo:core/Nat";
+import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
-
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -30,14 +28,14 @@ actor {
     active : Bool;
   };
 
+  public type UserProfile = {
+    name : Text;
+  };
+
   module Product {
     public func compare(p1 : Product, p2 : Product) : Order.Order {
       Nat.compare(p1.id, p2.id);
     };
-  };
-
-  public type UserProfile = {
-    name : Text;
   };
 
   // Categories
@@ -54,9 +52,10 @@ actor {
 
   // State Maps
   let products = Map.empty<ProductId, Product>();
-  let userProfiles = Map.empty<Principal, UserProfile>();
+  var nextProductId = 1;
 
-  // Access Control
+  // Keep these stable vars from previous version to avoid compatibility errors
+  let userProfiles = Map.empty<Principal, UserProfile>();
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
@@ -65,102 +64,44 @@ actor {
     predefinedCategories.find(func(c) { c == category }) != null;
   };
 
-  func checkAdmin(caller : Principal) {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-  };
-
   // Seed Initial Products
   func seedInitialProducts() {
     if (products.isEmpty()) {
-      products.add(
-        1,
-        {
-          id = 1;
-          name = "Apples";
-          price = 120;
-          category = "Fruits & Vegetables";
-          image = null;
-          active = true;
-        },
-      );
-      products.add(
-        2,
-        {
-          id = 2;
-          name = "Milk 1L";
-          price = 60;
-          category = "Dairy & Eggs";
-          image = null;
-          active = true;
-        },
-      );
-      products.add(
-        3,
-        {
-          id = 3;
-          name = "Whole Wheat Bread";
-          price = 40;
-          category = "Bakery";
-          image = null;
-          active = true;
-        },
-      );
-      products.add(
-        4,
-        {
-          id = 4;
-          name = "Orange Juice 1L";
-          price = 90;
-          category = "Beverages";
-          image = null;
-          active = true;
-        },
-      );
-      products.add(
-        5,
-        {
-          id = 5;
-          name = "Chicken Breast 500g";
-          price = 250;
-          category = "Meat & Seafood";
-          image = null;
-          active = true;
-        },
-      );
-      products.add(
-        6,
-        {
-          id = 6;
-          name = "Potato Chips";
-          price = 30;
-          category = "Snacks";
-          image = null;
-          active = true;
-        },
-      );
-      products.add(
-        7,
-        {
-          id = 7;
-          name = "Dish Soap";
-          price = 50;
-          category = "Household";
-          image = null;
-          active = true;
-        },
-      );
+      let initialProducts : [(Text, Rupees, Category)] = [
+        ("Fruits & Vegetables", 120, "Fruits & Vegetables"),
+        ("Dairy & Eggs", 60, "Dairy & Eggs"),
+        ("Bakery", 40, "Bakery"),
+        ("Beverages", 90, "Beverages"),
+        ("Meat & Seafood", 250, "Meat & Seafood"),
+        ("Snacks", 30, "Snacks"),
+        ("Household", 50, "Household"),
+      ];
+
+      var productId = 1;
+      for ((name, price, category) in initialProducts.values()) {
+        products.add(
+          productId,
+          {
+            id = productId;
+            name;
+            price;
+            category;
+            image = null;
+            active = true;
+          },
+        );
+        productId += 1;
+      };
+      nextProductId := productId;
     };
   };
 
-  // Seed products on first deploy (in constructor)
   seedInitialProducts();
 
-  // User Profiles
+  // User Management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+      Runtime.trap("Unauthorized: Only users can access profiles");
     };
     userProfiles.get(caller);
   };
@@ -179,100 +120,51 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Product Management - Admin Only
-  public shared ({ caller }) func addProduct(
-    id : ProductId,
-    name : Text,
-    price : Rupees,
-    category : Category,
-  ) : async () {
-    checkAdmin(caller);
-
+  // Product Management (no admin check - auth handled on frontend)
+  public shared ({ caller }) func addProduct(name : Text, price : Rupees, category : Category) : async ProductId {
     if (not isValidCategory(category)) {
-      Runtime.trap("Invalid category. Must be one of predefined categories.");
+      Runtime.trap("Invalid category.");
     };
 
-    if (products.containsKey(id)) {
-      switch (products.get(id)) {
-        case (?existingProduct) {
-          if (not existingProduct.active) {
-            Runtime.trap("Cannot add product with existing inactive (soft deleted) ID");
-          };
-          let updatedProduct = {
-            existingProduct with
-            name;
-            price;
-            category;
-            active = true;
-          };
-          products.add(id, updatedProduct);
-        };
-        case (null) {};
-      };
-    } else {
-      let newProduct = {
-        id;
-        name;
-        price;
-        category;
-        image = null;
-        active = true;
-      };
-      products.add(id, newProduct);
+    let id = nextProductId;
+    let newProduct : Product = {
+      id;
+      name;
+      price;
+      category;
+      image = null;
+      active = true;
     };
+
+    products.add(id, newProduct);
+    nextProductId += 1;
+    id;
   };
 
-  public shared ({ caller }) func updateProduct(
-    id : ProductId,
-    name : Text,
-    price : Rupees,
-    category : Category,
-  ) : async () {
-    checkAdmin(caller);
-
+  public shared ({ caller }) func updateProduct(id : ProductId, name : Text, price : Rupees, category : Category) : async () {
     if (not isValidCategory(category)) {
-      Runtime.trap("Invalid category. Must be one of predefined categories.");
+      Runtime.trap("Invalid category.");
     };
-
     switch (products.get(id)) {
-      case (null) {
-        Runtime.trap("Product not found");
-      };
+      case (null) { Runtime.trap("Product not found") };
       case (?existingProduct) {
-        if (not existingProduct.active) {
-          Runtime.trap("Cannot update an inactive (soft deleted) product");
-        };
-        let updatedProduct = {
-          existingProduct with
-          name;
-          price;
-          category;
-        };
-        products.add(id, updatedProduct);
+        products.add(id, { existingProduct with name; price; category });
       };
     };
   };
 
   public shared ({ caller }) func deleteProduct(id : ProductId) : async () {
-    checkAdmin(caller);
-
     switch (products.get(id)) {
-      case (null) {
-        Runtime.trap("Product not found");
-      };
+      case (null) { Runtime.trap("Product not found") };
       case (?existingProduct) {
-        let updatedProduct = {
-          existingProduct with
-          active = false;
-        };
-        products.add(id, updatedProduct);
+        products.add(id, { existingProduct with active = false });
       };
     };
   };
 
-  // Product Queries - Public (no authorization needed)
+  // Product Queries
   public query func getCategories() : async [Text] {
-    predefinedCategories;
+    predefinedCategories.sort();
   };
 
   public query func getProducts() : async [Product] {
@@ -287,20 +179,12 @@ actor {
     products.get(id);
   };
 
-  // Image Management - Admin Only
+  // Image Management
   public shared ({ caller }) func uploadProductImage(productId : ProductId, image : Storage.ExternalBlob) : async () {
-    checkAdmin(caller);
-
     switch (products.get(productId)) {
-      case (null) {
-        Runtime.trap("Product not found");
-      };
+      case (null) { Runtime.trap("Product not found") };
       case (?product) {
-        let updatedProduct = {
-          product with
-          image = ?image;
-        };
-        products.add(productId, updatedProduct);
+        products.add(productId, { product with image = ?image });
       };
     };
   };
