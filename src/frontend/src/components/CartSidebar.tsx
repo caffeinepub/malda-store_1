@@ -23,16 +23,16 @@ export default function CartSidebar({ onClose, isSheet }: CartSidebarProps) {
 
   const buildWhatsAppMessage = () => {
     const lines = items.map(
-      (i) => `${i.name} x${i.quantity} - \u20b9${Number(i.price) * i.quantity}`,
+      (i) => `${i.name} x${i.quantity} - ₹${Number(i.price) * i.quantity}`,
     );
     const msg = [
       "Hello! I'd like to place an order from Malda Store:",
       "",
       ...lines,
       "",
-      `Subtotal: \u20b9${subtotal}`,
-      `Delivery: ${deliveryCharge === 0 ? "Free" : `\u20b9${deliveryCharge}`}`,
-      `Total: \u20b9${total}`,
+      `Subtotal: ₹${subtotal}`,
+      `Delivery: ${deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}`,
+      `Total: ₹${total}`,
       "",
       "Delivery Address: [Please fill your address here]",
     ].join("\n");
@@ -77,7 +77,7 @@ export default function CartSidebar({ onClose, isSheet }: CartSidebarProps) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{item.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    \u20b9{Number(item.price)} each
+                    ₹{Number(item.price)} each
                   </p>
                 </div>
                 <div className="flex items-center border border-border rounded-md overflow-hidden shrink-0">
@@ -102,7 +102,7 @@ export default function CartSidebar({ onClose, isSheet }: CartSidebarProps) {
                   </button>
                 </div>
                 <div className="text-sm font-semibold w-14 text-right shrink-0">
-                  \u20b9{Number(item.price) * item.quantity}
+                  ₹{Number(item.price) * item.quantity}
                 </div>
                 <button
                   type="button"
@@ -122,7 +122,7 @@ export default function CartSidebar({ onClose, isSheet }: CartSidebarProps) {
         <div className="p-4 border-t border-border space-y-2">
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Subtotal</span>
-            <span>\u20b9{subtotal}</span>
+            <span>₹{subtotal}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Delivery</span>
@@ -131,26 +131,25 @@ export default function CartSidebar({ onClose, isSheet }: CartSidebarProps) {
                 deliveryCharge === 0 ? "text-primary font-semibold" : ""
               }
             >
-              {deliveryCharge === 0 ? "FREE" : `\u20b9${deliveryCharge}`}
+              {deliveryCharge === 0 ? "FREE" : `₹${deliveryCharge}`}
             </span>
           </div>
           <Separator />
           <div className="flex justify-between font-bold text-base">
             <span>Total</span>
-            <span>\u20b9{total}</span>
+            <span>₹{total}</span>
           </div>
           {belowMinimum && (
             <p
               className="text-xs text-destructive bg-destructive/10 rounded p-2"
               data-ocid="cart.error_state"
             >
-              Minimum order is \u20b9{MIN_ORDER}. Add \u20b9
-              {MIN_ORDER - subtotal} more.
+              Minimum order is ₹{MIN_ORDER}. Add ₹{MIN_ORDER - subtotal} more.
             </p>
           )}
           {subtotal >= DELIVERY_THRESHOLD && (
             <p className="text-xs text-primary bg-primary/10 rounded p-2">
-              \uD83C\uDF89 You qualify for free delivery!
+              🎉 You qualify for free delivery!
             </p>
           )}
           <Button

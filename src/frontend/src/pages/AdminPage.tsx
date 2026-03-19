@@ -59,6 +59,7 @@ const CATEGORIES = [
   "Meat & Seafood",
   "Snacks",
   "Household",
+  "Woman",
   "Other",
 ];
 
@@ -70,6 +71,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Meat & Seafood": "bg-red-100 text-red-800",
   Snacks: "bg-purple-100 text-purple-800",
   Household: "bg-gray-100 text-gray-800",
+  Woman: "bg-pink-100 text-pink-800",
   Other: "bg-slate-100 text-slate-700",
 };
 

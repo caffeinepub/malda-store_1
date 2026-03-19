@@ -42,7 +42,7 @@ export default function ProductCard({ product, index }: ProductCardProps) {
             {product.name}
           </h3>
           <p className="text-primary font-bold text-lg mt-0.5">
-            \u20b9{Number(product.price)}
+            ₹{Number(product.price)}
           </p>
         </div>
         <div className="flex items-center gap-2 mt-auto">

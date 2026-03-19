@@ -33,11 +33,13 @@ export default function Header({ onCartClick }: HeaderProps) {
     <header className="bg-primary text-primary-foreground shadow-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center" data-ocid="header.link">
-          <img
-            src="/assets/uploads/Gemini_Generated_Image_8zqcyv8zqcyv8zqc-1.png"
-            alt="Malda Store"
-            className="h-12 sm:h-14 w-auto object-contain"
-          />
+          <div className="bg-white rounded-lg px-2 py-1">
+            <img
+              src="/assets/uploads/Gemini_Generated_Image_8zqcyv8zqcyv8zqc-1.png"
+              alt="Malda Store"
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
+          </div>
         </Link>
 
         <div className="flex items-center gap-2">
